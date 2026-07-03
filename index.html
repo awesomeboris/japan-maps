@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Kyoto Electronics · Boris</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  :root{
+    --hotel:#7c3aed; --station:#2563eb; --primary:#e11d48;
+    --gadget:#059669; --mac:#d97706; --ink:#0f172a; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:var(--ink)}
+  #map{position:absolute;inset:0;z-index:1}
+
+  /* Header */
+  .bar{position:absolute;top:0;left:0;right:0;z-index:1000;
+    background:linear-gradient(180deg,rgba(15,23,42,.94),rgba(15,23,42,.86));
+    color:#fff;padding:10px 14px 11px;backdrop-filter:blur(6px);
+    box-shadow:0 2px 14px rgba(0,0,0,.25)}
+  .bar h1{margin:0;font-size:15px;font-weight:700;letter-spacing:.2px}
+  .bar p{margin:3px 0 0;font-size:11.5px;line-height:1.35;color:#cbd5e1}
+  .legend{display:flex;flex-wrap:wrap;gap:5px 10px;margin-top:8px}
+  .legend span{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#e2e8f0}
+  .dot{width:11px;height:11px;border-radius:50%;box-shadow:0 0 0 1.5px rgba(255,255,255,.55)}
+
+  /* Pins */
+  .pin{width:34px;height:34px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:0 3px 8px rgba(0,0,0,.35);border:2.5px solid #fff}
+  .pin b{transform:rotate(45deg);font-size:16px;line-height:1;font-style:normal}
+  .pin.big{width:42px;height:42px}
+  .pin.big b{font-size:20px}
+
+  /* Popups */
+  .leaflet-popup-content{margin:11px 13px;min-width:180px;max-width:230px}
+  .pt{font-size:15px;font-weight:700;margin:0 0 2px;line-height:1.2}
+  .badge{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;
+    text-transform:uppercase;color:#fff;padding:2px 7px;border-radius:99px;margin:0 0 6px}
+  .blurb{font-size:12.5px;line-height:1.4;color:#334155;margin:0 0 9px}
+  .acts{display:flex;gap:7px;flex-wrap:wrap}
+  .btn{flex:1;text-align:center;text-decoration:none;font-size:12.5px;font-weight:600;
+    padding:8px 6px;border-radius:9px;white-space:nowrap}
+  .btn.go{background:#1a73e8;color:#fff}
+  .btn.tel{background:#e2e8f0;color:#0f172a;flex:0 0 auto;padding:8px 12px}
+  .note{font-size:10.5px;color:#94a3b8;margin:8px 0 0;text-align:center}
+</style>
+</head>
+<body>
+<div class="bar">
+  <h1>🖥️ Kyoto electronics — gadget & Mac run</h1>
+  <p>Your machiya sits between two clusters: <b>Kyoto Station + Yodobashi</b> (~13 min SW) and the
+     <b>downtown strip</b> (Apple / EDION / Teramachi, ~14 min N). Tap a pin → <b>Directions</b> routes you on foot.</p>
+  <div class="legend">
+    <span><i class="dot" style="background:var(--hotel)"></i>Hotel</span>
+    <span><i class="dot" style="background:var(--station)"></i>Station</span>
+    <span><i class="dot" style="background:var(--primary)"></i>Start here</span>
+    <span><i class="dot" style="background:var(--gadget)"></i>Gadgets</span>
+    <span><i class="dot" style="background:var(--mac)"></i>Mac hunt</span>
+  </div>
+</div>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+const HOTEL = [34.9933, 135.7669];
+const C = {hotel:'#7c3aed', station:'#2563eb', primary:'#e11d48', gadget:'#059669', mac:'#d97706'};
+
+// query = what Google Maps searches for the exact place; walk = draw walking route from the hotel
+const PLACES = [
+  { name:"Genji Kyoto (your machiya)", cat:'hotel', emoji:"🏠", big:true, ll:HOTEL,
+    query:"Genji Kyoto Shimogyo", walk:false,
+    blurb:"Your base for Jul 3–7. Everything below is a short walk from here — north to the shops, south to the station." },
+
+  { name:"Kyoto Station", cat:'station', emoji:"🚉", ll:[34.9871,135.7583],
+    query:"Kyoto Station", walk:false,
+    blurb:"Main hub. Yodobashi is right across the north (Karasuma) central exit — ~2 min from the station concourse." },
+
+  { name:"Yodobashi Multimedia Kyoto", cat:'primary', emoji:"🖥️", big:true, ll:[34.9884,135.7570],
+    query:"Yodobashi Camera Multimedia Kyoto", walk:true, tel:"+81753511010",
+    blurb:"START HERE. Portable USB-C monitors, laptop/monitor stands, macro pads & left-hand devices (左手デバイス). Tax-free. Biggest single-building hunt in Kyoto." },
+
+  { name:"Apple Kyoto", cat:'gadget', emoji:"🍎", ll:[35.0038,135.7627],
+    query:"Apple Kyoto", walk:true,
+    blurb:"Mac / iPad accessories, adapters, USB-C sanity checks. No tourist tax-free here, and no high-memory Mac Studio — go for certainty on cables/stands." },
+
+  { name:"EDION Kyoto Kawaramachi Garden", cat:'gadget', emoji:"⚡", ll:[35.0033,135.7696],
+    query:"EDION Kyoto Kawaramachi Garden", walk:true,
+    blurb:"Big mainstream electronics — cables, chargers, travel-setup gear, appliances. Handy since you'll be right by Shijō-Kawaramachi anyway." },
+
+  { name:"Teramachi Denkigai", cat:'gadget', emoji:"🔌", ll:[34.9998,135.7661],
+    query:"Teramachi Kyogoku shopping street Kyoto", walk:true,
+    blurb:"Old-school electronics strip — browse-for-vibes, not deep inventory. Charming wander between Shijō and Takatsuji." },
+
+  { name:"PC Koubou Kyoto Teramachi", cat:'gadget', emoji:"🛠️", ll:[35.0005,135.7662],
+    query:"Pasokon Koubou Kyoto Teramachi", walk:true, tel:"+81753549210",
+    blurb:"Used / DIY PC shop. Call before walking — used stock was empty when I checked. Daily 10:30–19:30." },
+
+  { name:"Janpara Kyoto", cat:'mac', emoji:"💻", big:true, ll:[35.0037,135.7700],
+    query:"Janpara Kyoto", walk:true, tel:"+81753537281",
+    blurb:"MAC HUNT. Used-Mac chain — your best in-person shot at a 128GB M4 Max Mac Studio. Ask staff to search & transfer nationwide stock. Daily 11:00–19:30." },
+];
+
+const map = L.map('map', {zoomControl:false}).setView([34.9985,135.7635], 15);
+L.control.zoom({position:'bottomright'}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom:19, attribution:'&copy; OpenStreetMap'
+}).addTo(map);
+
+function icon(p){
+  const col = C[p.cat];
+  const cls = 'pin' + (p.big ? ' big' : '');
+  return L.divIcon({
+    className:'', html:`<div class="${cls}" style="background:${col}"><b>${p.emoji}</b></div>`,
+    iconSize:[p.big?42:34, p.big?42:34], iconAnchor:[p.big?21:17, p.big?42:34], popupAnchor:[0,-36]
+  });
+}
+function gmaps(p){
+  if(p.walk){
+    return `https://www.google.com/maps/dir/?api=1&origin=${HOTEL[0]},${HOTEL[1]}`
+      + `&destination=${encodeURIComponent(p.query+', Kyoto, Japan')}&travelmode=walking`;
+  }
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.query+', Kyoto, Japan')}`;
+}
+function badge(p){
+  const map = {hotel:['Base',C.hotel], station:['Transit',C.station], primary:['Start here',C.primary],
+    gadget:['Gadgets',C.gadget], mac:['Mac hunt',C.mac]};
+  const [t,c] = map[p.cat];
+  return `<span class="badge" style="background:${c}">${t}</span>`;
+}
+
+const group = [];
+PLACES.forEach(p=>{
+  const m = L.marker(p.ll, {icon:icon(p)}).addTo(map);
+  const dir = gmaps(p);
+  const telBtn = p.tel ? `<a class="btn tel" href="tel:${p.tel}">📞</a>` : '';
+  const goLabel = p.walk ? '🚶 Directions' : '📍 Open in Maps';
+  m.bindPopup(
+    `<div class="pt">${p.name}</div>${badge(p)}`
+    + `<div class="blurb">${p.blurb}</div>`
+    + `<div class="acts"><a class="btn go" href="${dir}" target="_blank" rel="noopener">${goLabel}</a>${telBtn}</div>`
+    + (p.walk ? `<div class="note">walking route from your machiya</div>` : '')
+  );
+  group.push(p.ll);
+});
+
+map.fitBounds(L.latLngBounds(group).pad(0.18));
+// keep the header from covering the top pins
+map.panBy([0, -34], {animate:false});
+</script>
+</body>
+</html>
