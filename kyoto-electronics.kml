@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <name>Kyoto Electronics &amp; Mac hunt — Boris</name>
+  <description>Gadget + Mac-Studio shopping run around the Genji machiya, Kyoto (Jul 3–7 2026). Import into Google My Maps: mymaps.google.com → New map → Import → this file.</description>
+
+  <Placemark>
+    <name>🏠 Genji Kyoto (your machiya)</name>
+    <description>Your base Jul 3–7. Everything below is a short walk — north to the shops, south to the station.</description>
+    <Point><coordinates>135.7669,34.9933,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>🚉 Kyoto Station</name>
+    <description>Main hub. Yodobashi is right across the north (Karasuma) central exit.</description>
+    <Point><coordinates>135.7583,34.9871,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>🖥️ Yodobashi Multimedia Kyoto — START HERE</name>
+    <description>Portable USB-C monitors, laptop/monitor stands, macro pads &amp; left-hand devices (左手デバイス). Tax-free. Biggest single-building hunt in Kyoto. Tel +81 75-351-1010.</description>
+    <Point><coordinates>135.7570,34.9884,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>🍎 Apple Kyoto</name>
+    <description>Mac / iPad accessories, adapters, USB-C sanity checks. No tourist tax-free; no high-memory Mac Studio.</description>
+    <Point><coordinates>135.7627,35.0038,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>⚡ EDION Kyoto Kawaramachi Garden</name>
+    <description>Mainstream electronics — cables, chargers, travel-setup gear, appliances. Right by Shijō-Kawaramachi.</description>
+    <Point><coordinates>135.7696,35.0033,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>🔌 Teramachi Denkigai</name>
+    <description>Old-school electronics strip — browse-for-vibes, lower inventory. Between Shijō and Takatsuji.</description>
+    <Point><coordinates>135.7661,34.9998,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>🛠️ PC Koubou Kyoto Teramachi</name>
+    <description>Used / DIY PC shop. Call before walking — used stock was empty when I checked. Daily 10:30–19:30. Tel +81 75-354-9210.</description>
+    <Point><coordinates>135.7662,35.0005,0</coordinates></Point>
+  </Placemark>
+
+  <Placemark>
+    <name>💻 Janpara Kyoto — Mac hunt</name>
+    <description>Used-Mac chain — your best in-person shot at a 128GB M4 Max Mac Studio. Ask staff to search &amp; transfer nationwide stock. Daily 11:00–19:30. Tel +81 75-353-7281.</description>
+    <Point><coordinates>135.7700,35.0037,0</coordinates></Point>
+  </Placemark>
+
+</Document>
+</kml>
